@@ -1,11 +1,13 @@
 package com.mantaray.android.converter;
 
 import android.app.Activity;
+import android.app.VoiceInteractor;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -123,18 +125,49 @@ public class MainActivity extends Activity {
         }
         boolean sqlite = ((CheckBox)findViewById(R.id.chk_sql)).isChecked();
         if ( sqlite ) {
-            // in sqlite
-            DBHelper dbhelper = new DBHelper(this);
-            // open database
-            SQLiteDatabase db = dbhelper.getWritableDatabase();
-            // prepare value to insert
-            ContentValues value = new ContentValues();
-            value.put("gregorian", g_date);
-            value.put("hijri", h_date);
-            // now can insert the value
-            db.insert(TABLE_NAME, null, value);
-            // close db
-            db.close();
+            AsyncTask<String, Void, Boolean> mytask = new AsyncTask<String, Void, Boolean>() {
+                DBHelper dbHelper = new DBHelper(MainActivity.this);
+                SQLiteDatabase db;
+
+                @Override
+                protected void onPreExecute() {
+                    super.onPreExecute();
+                    DBHelper dbhelper = new DBHelper(MainActivity.this);
+                }
+
+                @Override
+                protected Boolean doInBackground(String... params) {
+                    try {
+                        String g_date = params[0];
+                        String h_date = params[1];
+                        db = dbHelper.getWritableDatabase();
+                        // prepare value to insert
+                        ContentValues value = new ContentValues();
+                        value.put("gregorian", g_date);
+                        value.put("hijri", h_date);
+                        // now can insert the value
+                        long i = db.insert(TABLE_NAME, null, value);
+                        Log.d("LocaleSetting", "Result from inserting " + i);
+                        // close db
+                        db.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return new Boolean(false);
+                    }
+                    return new Boolean(true);
+                }
+
+                @Override
+                protected void onPostExecute(Boolean aBoolean) {
+                    super.onPostExecute(aBoolean);
+                    if (aBoolean.booleanValue()) {
+                        Toast.makeText(MainActivity.this, "Value inserted", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Error", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            };
+            mytask.execute(g_date, h_date);
         }
     }
 
