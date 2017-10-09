@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
     ///// request to the network using the Volley Framework
     ///// For more details see https://developer.android.com/training/volley/index.html
     //// query https://www.islamicfinder.org/islamic-date-converter/convertdate?day=13&month=11&year=2016&dateType=Gregorian
-    //// reqponse
+    //// response ==> see below
     public void startRequest(View v) {
         // gate the date from the widget
         DatePicker dp = (DatePicker)findViewById(R.id.datePicker);
